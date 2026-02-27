@@ -1,15 +1,32 @@
 [project]
 name = "lobsterdata"
 version = "0.1.0"
-description = "Add your description here"
+description = "Python client for the LOBSTER financial data API"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Ruihong Huang", email = "ruihong.huang@lobsterdata.com" }
+]
+keywords = ["lobster", "finance", "order book", "market data", "nasdaq"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering",
 ]
 requires-python = ">=3.13"
 dependencies = [
     "requests>=2.32.5",
 ]
+
+[project.urls]
+Homepage = "https://lobsterdata.com"
+Repository = "https://github.com/rhuang10/lobsterdata"
+"Bug Tracker" = "https://github.com/rhuang10/lobsterdata/issues"
 
 [project.scripts]
 lobsterdata = "lobsterdata:main"
@@ -23,4 +40,5 @@ dev = [
     "black>=26.1.0",
     "isort>=8.0.0",
     "pytest>=9.0.2",
+    "twine>=6.1.0",
 ]
