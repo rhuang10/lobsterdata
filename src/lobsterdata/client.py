@@ -161,6 +161,25 @@ class LobsterClient:
             )
         ]
 
+    def list_downloadable_requests(self) -> list[dict]:
+        """
+        Return all completed requests that have data available for download
+        (status ``'finished'``, data size > 0 and file not yet deleted).
+
+        Returns:
+            Filtered list of request dictionaries ready to download.
+
+        Raises:
+            requests.HTTPError: If the list endpoint returns an error status.
+        """
+        return [
+            req
+            for req in self.list_requests()
+            if req.get("status") == "finished"
+            and req.get("request_data_size", 0) > 0
+            and not req.get("request_file_deleted", False)
+        ]
+
     def download_request(
         self, request_id: str | int, download_dir: str = "./downloads"
     ) -> str:
