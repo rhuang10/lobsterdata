@@ -27,7 +27,7 @@ from lobsterdata import LobsterClient
 client = LobsterClient(
     api_key="your_api_key",
     api_secret="your_api_secret",
-    is_pilot=False,   # True → dev.lobsterdata.com, False → lobsterdata.com
+    is_pilot=True,   # True → dev.lobsterdata.com, False → lobsterdata.com
 )
 ```
 
