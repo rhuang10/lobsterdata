@@ -119,6 +119,16 @@ pytest tests/ -v
 | `test_downloads_and_deletes_all_downloadable` | Downloads every downloadable request and deletes it from the server |
 | `test_skips_404_silently` | Silently skips requests whose files return a 404 (recorded in DB but missing on disk) |
 
+### `TestGetBlockState` — `get_block_state()`
+
+| Test | Description |
+|---|---|
+| `test_returns_unblocked_state` | Parses a response where `blocked=False` with null reason and unblock time |
+| `test_returns_blocked_state` | Parses a response where `blocked=True` with reason `"Too many requests"` and a timestamp |
+| `test_returns_storage_blocked_state` | Correctly handles the `"Storage breached"` block reason |
+| `test_calls_correct_url` | Calls `GET /request/block-state` with the auth header |
+| `test_http_error_propagates` | HTTP errors (e.g. 403) propagate to the caller |
+
 ---
 
 ## Test data

@@ -235,6 +235,22 @@ class LobsterClient:
         response.raise_for_status()
         return response.json()
 
+    def get_block_state(self) -> dict:
+        """
+        Return the caller's API key block state.
+
+        Returns:
+            Dict with keys ``blocked`` (bool), ``block_reason`` (str | None),
+            and ``unblock_time`` (str | None).
+
+        Raises:
+            requests.HTTPError: If the API returns an error status.
+        """
+        url = f"{self.base_url}/request/block-state"
+        response = requests.get(url, headers=self._auth_headers)
+        response.raise_for_status()
+        return response.json().get("data", {})
+
     def download_and_cleanup(self, download_dir: str = "./downloads") -> list[str]:
         """
         Download every completed request that has data and has not yet been deleted,

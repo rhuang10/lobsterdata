@@ -443,3 +443,74 @@ class TestDownloadAndCleanup:
             saved = client.download_and_cleanup(download_dir=str(tmp_path))
 
         assert saved == []
+
+
+# ---------------------------------------------------------------------------
+# get_block_state
+# ---------------------------------------------------------------------------
+
+
+class TestGetBlockState:
+    def test_returns_unblocked_state(self):
+        client = _make_client()
+        payload = {"blocked": False, "block_reason": None, "unblock_time": None}
+        with patch(
+            "lobsterdata.client.requests.get",
+            return_value=_mock_get({"error": 0, "data": payload}),
+        ):
+            state = client.get_block_state()
+        assert state["blocked"] is False
+        assert state["block_reason"] is None
+        assert state["unblock_time"] is None
+
+    def test_returns_blocked_state(self):
+        client = _make_client()
+        payload = {
+            "blocked": True,
+            "block_reason": "Too many requests",
+            "unblock_time": "2026-02-27T12:30:00",
+        }
+        with patch(
+            "lobsterdata.client.requests.get",
+            return_value=_mock_get({"error": 0, "data": payload}),
+        ):
+            state = client.get_block_state()
+        assert state["blocked"] is True
+        assert state["block_reason"] == "Too many requests"
+        assert state["unblock_time"] == "2026-02-27T12:30:00"
+
+    def test_returns_storage_blocked_state(self):
+        client = _make_client()
+        payload = {
+            "blocked": True,
+            "block_reason": "Storage breached",
+            "unblock_time": None,
+        }
+        with patch(
+            "lobsterdata.client.requests.get",
+            return_value=_mock_get({"error": 0, "data": payload}),
+        ):
+            state = client.get_block_state()
+        assert state["block_reason"] == "Storage breached"
+
+    def test_calls_correct_url(self):
+        client = _make_client()
+        with patch(
+            "lobsterdata.client.requests.get",
+            return_value=_mock_get({"error": 0, "data": {}}),
+        ) as mock_get:
+            client.get_block_state()
+            mock_get.assert_called_once_with(
+                f"{PILOT_BASE}/request/block-state",
+                headers=client._auth_headers,
+            )
+
+    def test_http_error_propagates(self):
+        import requests as req_lib
+
+        client = _make_client()
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.side_effect = req_lib.HTTPError("403")
+        with patch("lobsterdata.client.requests.get", return_value=mock_resp):
+            with pytest.raises(req_lib.HTTPError):
+                client.get_block_state()

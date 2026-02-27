@@ -65,7 +65,7 @@ def main() -> None:
         request_id = result.get("data", {}).get("request_id")
         request_ids.append(str(request_id))
         print(f"  ✓ {symbol} – ID: {request_id}")
-        time.sleep(1)
+        time.sleep(3)
 
     print(f"\n{len(request_ids)} request(s) submitted.")
     print(f"Polling every {POLL_INTERVAL}s until all data is ready...\n")
