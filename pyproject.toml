@@ -1,6 +1,6 @@
 [project]
 name = "lobsterdata"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Python client for the LOBSTER financial data API"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -40,6 +40,9 @@ lobsterdata = "lobsterdata:main"
 [build-system]
 requires = ["uv_build>=0.10.6,<0.11.0"]
 build-backend = "uv_build"
+
+[tool.uv.version]
+source = "git"
 
 [dependency-groups]
 dev = [
