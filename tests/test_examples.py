@@ -189,3 +189,114 @@ class TestLoadSymbols:
     def test_empty_csv_returns_empty_list(self, tmp_path):
         p = self._write_csv(tmp_path, [], ["Ticker"])
         assert br._load_symbols(p) == []
+
+
+# ---------------------------------------------------------------------------
+# cli.cmd_ls
+# ---------------------------------------------------------------------------
+
+_FAKE_REQUESTS = [
+    {
+        "request_id": 42,
+        "symbol": "AAPL",
+        "start_datetime": "2026-04-01T00:00:00",
+        "end_datetime": "2026-04-02T00:00:00",
+        "status": "finished",
+        "request_data_size": 2 * 1024 * 1024,  # 2 MB
+        "request_file_deleted": False,
+    },
+    {
+        "request_id": 43,
+        "symbol": "MSFT",
+        "start_datetime": "2026-04-01T00:00:00",
+        "end_datetime": "2026-04-01T00:00:00",
+        "status": "running",
+        "request_data_size": 0,
+        "request_file_deleted": False,
+    },
+    {
+        "request_id": 44,
+        "symbol": "TSLA",
+        "start_datetime": "2026-04-03T00:00:00",
+        "end_datetime": "2026-04-03T00:00:00",
+        "status": "waiting",
+        "request_data_size": 0,
+        "request_file_deleted": False,
+    },
+]
+
+
+class TestCmdLs:
+    """cmd_ls should print a table of active requests or a 'none found' message."""
+
+    def _make_client(self, requests):
+        from unittest.mock import MagicMock
+
+        client = MagicMock()
+        client.list_alive_requests.return_value = requests
+        return client
+
+    def test_empty_list_prints_no_active_message(self, capsys):
+        client = self._make_client([])
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "No active requests found" in out
+
+    def test_empty_list_does_not_print_table(self, capsys):
+        client = self._make_client([])
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "ID" not in out or "Status" not in out
+
+    def test_table_header_printed(self, capsys):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "ID" in out
+        assert "Symbol" in out
+        assert "Status" in out
+        assert "Size (MB)" in out
+
+    def test_all_request_ids_appear(self, capsys):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "42" in out
+        assert "43" in out
+        assert "44" in out
+
+    def test_symbols_appear(self, capsys):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "AAPL" in out
+        assert "MSFT" in out
+        assert "TSLA" in out
+
+    def test_status_values_appear(self, capsys):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "finished" in out
+        assert "running" in out
+        assert "waiting" in out
+
+    def test_dates_appear(self, capsys):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        assert "2026-04-01" in out
+        assert "2026-04-02" in out
+        assert "2026-04-03" in out
+
+    def test_size_formatted_as_mb(self, capsys):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        out = capsys.readouterr().out
+        # 2 MB should appear as "2.00"
+        assert "2.00" in out
+
+    def test_calls_list_alive_requests_once(self):
+        client = self._make_client(_FAKE_REQUESTS)
+        cli_mod.cmd_ls(client)
+        client.list_alive_requests.assert_called_once()

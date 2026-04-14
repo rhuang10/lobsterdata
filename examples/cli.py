@@ -9,6 +9,9 @@ Two commands are available:
     download  List all requests that are ready to download and let you pick
               one by ID, or type "all" to download everything at once.
 
+    ls        List all active requests (waiting, running, or ready to
+              download) with their current status.
+
 Credentials
 -----------
 Copy .env.example to .env and fill in your credentials:
@@ -26,6 +29,7 @@ Usage
 -----
     python examples/cli.py submit
     python examples/cli.py download
+    python examples/cli.py ls
 """
 
 import argparse
@@ -154,6 +158,44 @@ def cmd_submit(client: LobsterClient) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Command: ls
+# ---------------------------------------------------------------------------
+
+
+def cmd_ls(client: LobsterClient) -> None:
+    print("\n=== Active requests ===\n")
+    print("Fetching request list…")
+
+    requests_list = client.list_alive_requests()
+
+    if not requests_list:
+        print("No active requests found.")
+        return
+
+    col_w = {"id": 10, "symbol": 8, "start": 12, "end": 12, "status": 12, "size": 10}
+    header = (
+        f"{'ID':<{col_w['id']}} {'Symbol':<{col_w['symbol']}} "
+        f"{'Start':<{col_w['start']}} {'End':<{col_w['end']}} "
+        f"{'Status':<{col_w['status']}} {'Size (MB)':>{col_w['size']}}"
+    )
+    print(header)
+    print("-" * len(header))
+    for req in requests_list:
+        rid = str(req.get("request_id") or req.get("id"))
+        symbol = req.get("symbol", "N/A")
+        start = req.get("start_datetime", "N/A")[:10]
+        end = req.get("end_datetime", "N/A")[:10]
+        status = req.get("status", "N/A")
+        size_mb = req.get("request_data_size", 0) / (1024 * 1024)
+        print(
+            f"{rid:<{col_w['id']}} {symbol:<{col_w['symbol']}} "
+            f"{start:<{col_w['start']}} {end:<{col_w['end']}} "
+            f"{status:<{col_w['status']}} {size_mb:>{col_w['size']}.2f}"
+        )
+    print()
+
+
+# ---------------------------------------------------------------------------
 # Command: download
 # ---------------------------------------------------------------------------
 
@@ -237,11 +279,12 @@ def main() -> None:
             "Commands:\n"
             "  submit    Prompt for inputs and submit a single data request\n"
             "  download  List ready requests and download your choice\n"
+            "  ls        List all active requests with their current status\n"
         ),
     )
     parser.add_argument(
         "command",
-        choices=["submit", "download"],
+        choices=["submit", "download", "ls"],
         help="Action to perform",
     )
     args = parser.parse_args()
@@ -254,6 +297,8 @@ def main() -> None:
         cmd_submit(client)
     elif args.command == "download":
         cmd_download(client)
+    elif args.command == "ls":
+        cmd_ls(client)
 
 
 if __name__ == "__main__":
