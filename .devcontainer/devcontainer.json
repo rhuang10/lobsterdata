@@ -3,15 +3,36 @@
 {
 	"name": "Python 3",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:2-3.13-trixie",
+	"image": "mcr.microsoft.com/devcontainers/python:3.13-trixie",
 	"features": {
 		"ghcr.io/devcontainers-extra/features/uv:1": {}
 	},
+	// ── SSH ──────────────────────────────────────────────────────────────────
+	// Recommended: forward the host SSH agent into the container so the
+	// private key never leaves the host machine.
+	//
+	// macOS / Linux: ensure ssh-agent is running on the host:
+	//   eval "$(ssh-agent -s)" && ssh-add ~/.ssh/id_ed25519
+	//
+	// Windows (Git Bash / WSL2): set SSH_AUTH_SOCK before opening VS Code,
+	// or use the OpenSSH agent service and point SSH_AUTH_SOCK accordingly.
+	"mounts": [
+		// Bind the host SSH agent socket (set SSH_AUTH_SOCK on host first).
+		// Remove or comment out this mount if SSH_AUTH_SOCK is not set.
+		"source=${localEnv:SSH_AUTH_SOCK},target=/ssh-agent,type=bind,readonly"
+	],
+	"remoteEnv": {
+		// Point the container's SSH client at the forwarded agent socket.
+		"SSH_AUTH_SOCK": "/ssh-agent"
+	},
+	// ── Env / lifecycle ──────────────────────────────────────────────────────
 	// Load .env file into the container environment (if it exists)
 	"runArgs": [
 		"--env-file",
 		".env"
 	],
+	// Run once on container create/rebuild: install deps and register the git pre-push hook
+	"postCreateCommand": "bash .devcontainer/setup.sh",
 	// Source .env into every new shell session
 	"postStartCommand": "grep -s '^[^#]' .env | sed 's/^/export /' >> ~/.bashrc || true",
 	"customizations": {

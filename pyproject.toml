@@ -23,6 +23,12 @@ dependencies = [
     "requests>=2.32.5",
 ]
 
+[project.optional-dependencies]
+examples = [
+    "anyio>=4.0",
+    "python-dotenv>=1.0",
+]
+
 [project.urls]
 Homepage = "https://lobsterdata.com"
 Repository = "https://github.com/rhuang10/lobsterdata"
@@ -40,5 +46,22 @@ dev = [
     "black>=26.1.0",
     "isort>=8.0.0",
     "pytest>=9.0.2",
+    "python-dotenv>=1.0",
+    "ruff>=0.9",
     "twine>=6.1.0",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "examples"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]   # pycodestyle errors/warnings, pyflakes, isort

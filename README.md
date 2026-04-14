@@ -14,6 +14,12 @@ LOBSTER provides high-quality, tick-level order book data for NASDAQ-listed stoc
 pip install lobsterdata
 ```
 
+To use the example CLI scripts (`examples/cli.py` and `examples/bulk_request.py`), install the `examples` optional dependency group, which adds [`anyio`](https://anyio.readthedocs.io) and [`python-dotenv`](https://pypi.org/project/python-dotenv/):
+
+```bash
+pip install "lobsterdata[examples]"
+```
+
 ## Quick start
 
 > **🦞 Pilot phase** — The API is currently in **pilot** and access is by invitation only.
@@ -84,7 +90,8 @@ client.delete_request(request_id)
 print("Deleted from server.")
 ```
 
-> See the [`examples/`](examples/) directory for a complete multi-symbol polling workflow.
+> See the [`examples/`](examples/) directory for ready-to-run CLI scripts — a great starting point for learning the full API workflow.
+> `examples/cli.py` covers interactive single-request submission and download; `examples/bulk_request.py` shows an async multi-symbol pipeline.
 
 ## API limits & constraints
 
@@ -134,7 +141,25 @@ If `blocked` is `True`, the response will include `block_reason` and `unblock_ti
 
 ## Credentials
 
-Set your credentials as environment variables (copy `.env.example` → `.env`):
+Credentials are read from a `.env` file (recommended) or environment variables.
+
+### `.env` file (recommended)
+
+Copy the provided template and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+```dotenv
+LOBSTER_API_KEY=your_api_key
+LOBSTER_API_SECRET=your_api_secret
+LOBSTER_IS_PILOT=true
+```
+
+The CLI scripts load `.env` automatically via `python-dotenv`. `.env` is git-ignored.
+
+### Environment variables
 
 ```bash
 export LOBSTER_API_KEY="your_api_key"

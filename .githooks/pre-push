@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# .githooks/pre-push
+#
+# Runs before every `git push`.
+# Executes the full unit-test suite via pytest.
+# Halts the push and suggests the fix command on any failure.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+echo "── pre-push: unit tests ─────────────────────────────────────"
+
+if ! uv run --project "$REPO_ROOT" pytest tests/ -q 2>&1; then
+    echo ""
+    echo "✖  Tests failed. Fix the failures and re-run:"
+    echo ""
+    echo "     ./run_tests.sh"
+    echo ""
+    exit 1
+fi
+
+echo "── all tests passed ✓ ───────────────────────────────────────"

@@ -7,7 +7,6 @@ network connection or credentials are needed.
 
 from __future__ import annotations
 
-import json
 import os
 from unittest.mock import MagicMock, patch
 
@@ -20,14 +19,15 @@ from lobsterdata.client import LobsterClient
 # ---------------------------------------------------------------------------
 
 FAKE_TOKEN = "fake-access-token-abc123"
-PILOT_BASE = "https://dev.lobsterdata.com/api"
+PILOT_BASE = "https://pilot.lobsterdata.com/api"
 PROD_BASE = "https://lobsterdata.com/api"
 
 
 def _mock_auth_response(token: str = FAKE_TOKEN) -> MagicMock:
     """Return a mock response for the /api-key/validate endpoint."""
     resp = MagicMock()
-    resp.json.return_value = {"access_token": token, "expires_in": 86400, "user_id": 1}
+    resp.json.return_value = {"access_token": token,
+                              "expires_in": 86400, "user_id": 1}
     resp.raise_for_status.return_value = None
     return resp
 
@@ -80,7 +80,8 @@ class TestInit:
         import requests as req_lib
 
         mock_resp = MagicMock()
-        mock_resp.raise_for_status.side_effect = req_lib.HTTPError("401 Unauthorized")
+        mock_resp.raise_for_status.side_effect = req_lib.HTTPError(
+            "401 Unauthorized")
         with patch("lobsterdata.client.requests.post", return_value=mock_resp):
             with pytest.raises(req_lib.HTTPError):
                 LobsterClient(api_key="bad", api_secret="bad", is_pilot=True)
@@ -94,7 +95,8 @@ class TestInit:
 class TestAuthHeaders:
     def test_bearer_token_in_headers(self):
         client = _make_client()
-        assert client._auth_headers == {"Authorization": f"Bearer {FAKE_TOKEN}"}
+        assert client._auth_headers == {
+            "Authorization": f"Bearer {FAKE_TOKEN}"}
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +247,8 @@ class TestListAliveRequests:
         ):
             alive = client.list_alive_requests()
         for r in alive:
-            assert not (r["status"] == "finished" and r["request_file_deleted"])
+            assert not (r["status"] ==
+                        "finished" and r["request_file_deleted"])
 
 
 # ---------------------------------------------------------------------------
@@ -399,8 +402,7 @@ class TestDeleteRequest:
 class TestDownloadAndCleanup:
     def test_downloads_and_deletes_all_downloadable(self, tmp_path):
         client = _make_client()
-        downloadable = [SAMPLE_REQUESTS[0]]  # only id=1 is downloadable
-
+        # Only SAMPLE_REQUESTS[0] (id=1) is downloadable: finished, data>0, not deleted
         mock_get_list = _mock_get({"data": SAMPLE_REQUESTS})
         mock_get_file = MagicMock()
         mock_get_file.raise_for_status.return_value = None
@@ -453,7 +455,8 @@ class TestDownloadAndCleanup:
 class TestGetBlockState:
     def test_returns_unblocked_state(self):
         client = _make_client()
-        payload = {"blocked": False, "block_reason": None, "unblock_time": None}
+        payload = {"blocked": False,
+                   "block_reason": None, "unblock_time": None}
         with patch(
             "lobsterdata.client.requests.get",
             return_value=_mock_get({"error": 0, "data": payload}),

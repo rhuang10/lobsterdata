@@ -23,7 +23,7 @@ class LobsterClient:
                     If False, use the production endpoint (lobsterdata.com).
     """
 
-    _PILOT_BASE_URL = "https://dev.lobsterdata.com/api"
+    _PILOT_BASE_URL = "https://pilot.lobsterdata.com/api"
     _PROD_BASE_URL = "https://lobsterdata.com/api"
 
     def __init__(self, api_key: str, api_secret: str, is_pilot: bool = False) -> None:

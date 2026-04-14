@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit
+#
+# Runs before every `git commit`.
+# Checks formatting of src/ and examples/ with black, isort, and ruff.
+# tests/ is intentionally excluded – it is not part of the release.
+# Halts the commit and suggests the fix command on any failure.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+FORMAT_TARGETS="src/ examples/"
+PASS=true
+
+echo "── pre-commit: format checks (src/ examples/) ───────────────"
+
+echo "  [1/3] black --check $FORMAT_TARGETS"
+if ! uv run --project "$REPO_ROOT" black --check $FORMAT_TARGETS 2>&1; then
+    PASS=false
+fi
+
+echo "  [2/3] isort --check-only $FORMAT_TARGETS"
+if ! uv run --project "$REPO_ROOT" isort --check-only $FORMAT_TARGETS 2>&1; then
+    PASS=false
+fi
+
+echo "  [3/3] ruff check $FORMAT_TARGETS"
+if ! uv run --project "$REPO_ROOT" ruff check $FORMAT_TARGETS 2>&1; then
+    PASS=false
+fi
+
+if [[ "$PASS" == "false" ]]; then
+    echo ""
+    echo "✖  Format check failed. Run the formatter and re-stage your files:"
+    echo ""
+    echo "     ./format.sh"
+    echo "     git add -u"
+    echo ""
+    exit 1
+fi
+
+echo "── all format checks passed ✓ ───────────────────────────────"
