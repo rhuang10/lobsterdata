@@ -217,6 +217,24 @@ class LobsterClient:
 
         return os.path.abspath(filepath)
 
+    def cancel_request(self, request_id: str | int) -> dict:
+        """
+        Cancel a request that is currently waiting or running.
+
+        Args:
+            request_id: The ID of the request to cancel.
+
+        Returns:
+            Parsed JSON response from the API, including the updated request record.
+
+        Raises:
+            requests.HTTPError: If the API returns an error status.
+        """
+        url = f"{self.base_url}/request/cancel/{request_id}"
+        response = requests.post(url, headers=self._auth_headers)
+        response.raise_for_status()
+        return response.json()
+
     def delete_request(self, request_id: str | int) -> dict:
         """
         Delete a completed request (and its data file) from the server.

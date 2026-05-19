@@ -188,8 +188,8 @@ def cmd_ls(client: LobsterClient) -> None:
     for req in requests_list:
         rid = str(req.get("request_id") or req.get("id"))
         symbol = req.get("symbol", "N/A")
-        start = req.get("start_datetime", "N/A")[:10]
-        end = req.get("end_datetime", "N/A")[:10]
+        start = req.get("start_date", "N/A")[:10]
+        end = req.get("end_date", "N/A")[:10]
         status = req.get("status", "N/A")
         size_mb = req.get("request_data_size", 0) / (1024 * 1024)
         print(
