@@ -20,12 +20,61 @@ To use the example CLI scripts (`examples/cli.py` and `examples/bulk_request.py`
 pip install "lobsterdata[examples]"
 ```
 
+## Credentials
+
+Generate your API key and secret on the [LOBSTER request data page](https://php.lobsterdata.com/requestdata.php): sign in, open the user menu in the top right, and choose **generate api key.**
+
+<p align="center">
+  <img src="images/api-key.png" alt="Generate API key from the user menu on the LOBSTER request data page"/>
+</p>
+
+Store them in a `.env` file (recommended) or as environment variables.
+
+### `.env` file (recommended)
+
+Copy the provided template and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+```dotenv
+LOBSTER_API_KEY=your_api_key
+LOBSTER_API_SECRET=your_api_secret
+LOBSTER_IS_PILOT=false
+```
+
+The CLI scripts load `.env` automatically via `python-dotenv`. In your own code, pass the values into `LobsterClient` as shown in [Quick start](#quick-start). `.env` is git-ignored.
+
+### Environment variables
+
+```bash
+export LOBSTER_API_KEY="your_api_key"
+export LOBSTER_API_SECRET="your_api_secret"
+export LOBSTER_IS_PILOT="false"
+```
+
 ## Quick start
 
-> **🦞 Pilot phase** — The API is currently in **pilot** and access is by invitation only.
-> If you are an active Lobsterian and would like to join, please send an email to
-> [service@lobsterdata.com](mailto:service@lobsterdata.com) with your **name**, **institute**, and **email address**.
-> Only active Lobsterians will be granted access.
+With `.env` (or exported environment variables) set up:
+
+```python
+import os
+from dotenv import load_dotenv
+from lobsterdata import LobsterClient
+
+load_dotenv()
+
+client = LobsterClient(
+    api_key=os.environ["LOBSTER_API_KEY"],
+    api_secret=os.environ["LOBSTER_API_SECRET"],
+    is_pilot=os.environ.get("LOBSTER_IS_PILOT", "false").lower() == "true",
+)
+```
+
+`load_dotenv()` requires [`python-dotenv`](https://pypi.org/project/python-dotenv/) (`pip install "lobsterdata[examples]"`). Skip it if the variables are already exported.
+
+If `.env` is not set up, pass credentials directly:
 
 ```python
 from lobsterdata import LobsterClient
@@ -33,7 +82,7 @@ from lobsterdata import LobsterClient
 client = LobsterClient(
     api_key="your_api_key",
     api_secret="your_api_secret",
-    is_pilot=True,   # True → dev.lobsterdata.com, False → lobsterdata.com
+    is_pilot=False,
 )
 ```
 
@@ -51,7 +100,7 @@ request_id = result["data"]["request_id"]
 print(f"Request submitted – ID: {request_id}")
 ```
 
-> **Submitting in a loop?** Sleep at least **3 seconds between each call** on the pilot server to stay well within the [rate limit](#rate-limiting) of 20 requests per minute. Exceeding it will block your API key for 10 minutes.
+> **Submitting in a loop?** Sleep at least **3 seconds between each call** to stay well within the [rate limit](#rate-limiting) of 20 requests per minute. Exceeding it will block your API key for 10 minutes.
 >
 > ```python
 > import time
@@ -113,7 +162,7 @@ print("Deleted from server.")
 
 ### Storage limit
 
-The pilot server has a storage limit of **200 GB of raw CSV data** (not the compressed zip size). If your total stored data on the server exceeds this quota, your API key will be **blocked** with the reason `"Storage breached"`. The block is lifted automatically once you delete enough files to drop below the limit — use `delete_request()` or `download_and_cleanup()` to free up space.
+The API has a storage limit of **200 GB of raw CSV data** (not the compressed zip size). If your total stored data on the server exceeds this quota, your API key will be **blocked** with the reason `"Storage breached"`. The block is lifted automatically once you delete enough files to drop below the limit — use `delete_request()` or `download_and_cleanup()` to free up space.
 
 ### Checking your block state
 
@@ -138,34 +187,6 @@ If `blocked` is `True`, the response will include `block_reason` and `unblock_ti
 | `delete_request(request_id)` | Delete a request and its file from the server |
 | `download_and_cleanup(download_dir)` | Download all available files then delete them from the server |
 | `get_block_state()` | Check whether your API key is currently blocked and why |
-
-## Credentials
-
-Credentials are read from a `.env` file (recommended) or environment variables.
-
-### `.env` file (recommended)
-
-Copy the provided template and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-```dotenv
-LOBSTER_API_KEY=your_api_key
-LOBSTER_API_SECRET=your_api_secret
-LOBSTER_IS_PILOT=true
-```
-
-The CLI scripts load `.env` automatically via `python-dotenv`. `.env` is git-ignored.
-
-### Environment variables
-
-```bash
-export LOBSTER_API_KEY="your_api_key"
-export LOBSTER_API_SECRET="your_api_secret"
-export LOBSTER_IS_PILOT="false"
-```
 
 ## License
 
